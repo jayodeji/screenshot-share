@@ -6,52 +6,73 @@ require 'json'
 require 'base64'
 require 'net/http'
 require 'net/https'
+require 'clipboard'
+
+require_relative 'lib/config.rb'
+require_relative 'lib/api_bridge.rb'
 
 def upload_to_imgur(added_files)
   added_files.each do |image_path|
-    upload_anonymous image_path
-    #copy that file was saved
-    #copy last file to clipboard
+    image_url = upload_anonymous image_path
+    Clipboard.copy image_url
   end  
 end
 
 def upload_anonymous(image_path)
   puts "Uploading anonymous"
-  request_url = "#{$config['api_endpoint']}image"
+  authorization = "Client-ID #{$config['client_id']}"
+  image_url = upload_image image_path, authorization
 
-  uri = URI.parse(request_url)
-  http = Net::HTTP.new(uri.host, uri.port)
-  http.use_ssl = true
-
-  request = Net::HTTP::Post.new(uri.path)
-  # request.body = JSON.generate({:image => File.open(image_path, 'rb').read})
-  request.body = JSON.generate({:image => Base64.encode64(File.read image_path)})
-  request['Authorization'] = "Client-ID #{$config['client_id']}"
-  response = http.request(request)
-  puts response.body
-  # response_body = JSON.parse response.body
-
-  request_url
+  image_url
 end
 
+def upload_image(image_path, authorization)
+  params = { 'image' => Base64.encode64(File.open(image_path, 'rb').read) }
+  request_url = "#{$config['api_endpoint']}image"
 
-#If a config file is included when calling this, use it, 
-#otherwise try to use the default config file
-#otherwise abort this script with a descriptive message
-config_file = ARGV[0]
-if not config_file then config_file = 'config/config.yaml' end
+  res = make_post_request request_url, params, authorization
+  image_url = res['data']['link']
 
-$config = YAML.load(File.read(config_file))
+  if not image_url
+    puts 'an error occurred'
+    return
+  end
 
+  image_url
+end
 
-#If this is not an anonymous upload
-# if not $config['anonymous']
-#   $consumer = OAuth::Consumer.new($config['consumer_key'], $config['consumer_secret'], {:site=>"https://api.imgur.com/2"})
-#   $access_token = OAuth::AccessToken.from_hash($consumer, {:oauth_token=>$config['oauth_token'], :oauth_token_secret => $config['oauth_token_secret']})
-# end
+#make post requests
+def make_post_request(request_url, params, authorization)
+  begin
+    uri = URI.parse(request_url)
+    https = Net::HTTP.new(uri.host, uri.port)
+    https.use_ssl = true
 
+    request = Net::HTTP::Post.new(uri.request_uri)
+    request.set_form_data(params)
 
-listener = Listen.to($config['listen_to_dir'], only: /\.rb|.png$/) do |modified, added, removed|
+    if authorization
+      request['Authorization'] = authorization
+    end
+
+    response = https.request(request)  
+    res = JSON.parse(response.body)
+  rescue Exception => exception 
+    log exception.message
+  end  
+  
+  res
+end
+
+def log(text)
+  puts text
+end
+
+ScreenShare::Config.load_config #initialize the config
+ScreenShare::ApiBridge.init_image_service
+
+listen_to_dir = ScreenShare::Config.get 'listen_to_dir'
+listener = Listen.to($config[listen_to_dir], only: /\.rb|.png$/) do |modified, added, removed|
   if added.length > 0
     upload_to_imgur added
   end
