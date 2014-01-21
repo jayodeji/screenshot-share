@@ -22,19 +22,19 @@ These gems are in the Gemfile.
 
 Configuration Options
 ======================
-listen_to_dir: 'xxx' --> This is the full path to the directory that the app should listen to
+- listen_to_dir: 'xxx' --> This is the full path to the directory that the app should listen to
 
-image_service: 'imgur' --> Which image service to use. By default it uses imgur, but for developers, this can easily be changed
+- image_service: 'imgur' --> Which image service to use. By default it uses imgur, but for developers, this can easily be changed
 
-anonymous: 1 --> Whether to use authentication or anonymous, by default it uses anonymous
+- anonymous: 1 --> Whether to use authentication or anonymous, by default it uses anonymous
 
-client_id: 'xxx' --> Client id
-client_secret: 'xxx' --> Client secret
+- client_id: 'xxx' --> Client id
+- client_secret: 'xxx' --> Client secret
 
-This above two configurations are the imgur client_id and client_secret. Make sure you hae an account with
+These above two configurations are the imgur client_id and client_secret. Make sure you hae an account with
 imgur. Then go to this link : http://imgur.com/account/settings/apps, and get your client_secret and client_id
 
-api_endpoint: 'https://api.imgur.com/3/'
+- api_endpoint: 'https://api.imgur.com/3/'
 For imgur, this endpoint does not need to change
 
 
