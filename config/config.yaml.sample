@@ -1,6 +1,6 @@
-key: 'XXX'
-imgur_session: 'XXX'
-listen_to_dir: 'XXX'
+listen_to_dir: 'xxx'
+image_service: 'imgur'
 anonymous: 1
-oauth_token: 'XXXX'
-oauth_token_secret: 'XXX'
+client_id: 'xxx'
+client_secret: 'xxx'
+api_endpoint: 'https://api.imgur.com/3/'

@@ -13,19 +13,31 @@ module ScreenShare
                 require_relative "#{image_service}_service" #require the service class
 
                 @@image_service = Object.const_get("ScreenShare::#{image_service.capitalize}Service").new
-                @@image_service.test_service
             end  
 
-            def upload_image 
+            def upload_image image_path
+                puts 'Uploading the image'
+                @@image_service.send_upload_request image_path
+            end
+
+            def get_uploaded_url
+                image_url = @@image_service.get_image_url
+                if not image_url or image_url.length < 1
+                    raise 'Image url is blank'
+                end
+                image_url
             end
         end
     end
 
     class ImageService 
 
-        def test_service 
-            puts 'testing'
-            raise 'hell'
+        def send_upload_request image_path 
+           raise "child class needs to implement this method #{__method__}"
+        end
+
+        def get_image_url
+            ''
         end
     end
 end
